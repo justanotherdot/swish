@@ -1,0 +1,9 @@
+[package]
+name = "swish"
+version = "0.1.0"
+authors = ["Ryan James Spencer <spencer.ryanjames@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+ring = "0.14.6"
+hex = "0.3.2"
