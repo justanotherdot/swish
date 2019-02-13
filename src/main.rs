@@ -10,7 +10,7 @@ fn main() -> std::io::Result<()> {
     let matches = App::new("swish")
         .version("0.1.0")
         .author("Ryan James Spencer <spencer.ryanjames@gmail.com>")
-        .about("swish deterministically compares sets of files")
+        .about("deterministically compares sets of files")
         .arg(
             Arg::with_name("verbose")
                 .short("v")
