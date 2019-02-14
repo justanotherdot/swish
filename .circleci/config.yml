@@ -25,6 +25,7 @@ jobs:
             - target/debug/build
             - target/debug/deps
           key: v4-cargo-cache-{{ arch }}-{{ checksum "Cargo.lock" }}
+      # TODO make this a test: job.
       - run:
           name: Run all tests
           command: cargo test --all
