@@ -1,13 +1,32 @@
 extern crate clap;
 extern crate hex;
+extern crate rayon;
 extern crate ring;
 
-use clap::{App, Arg};
+use clap::{crate_name, App, Arg};
+use rayon::prelude::*;
 use ring::digest;
-use std::io::{self, Read};
+use std::fs;
+
+fn hash_file(buffer: String) -> String {
+    let lines = buffer.split("\n").collect::<Vec<_>>();
+    let mut shas = lines
+        .par_iter()
+        .map(|s| hex::encode(digest::digest(&digest::SHA256, s.as_ref()).as_ref()))
+        .collect::<Vec<_>>();
+    shas.sort();
+    for sha in shas.iter() {
+        println!("hash: {}", sha);
+    }
+
+    let actual = digest::digest(&digest::SHA256, shas.join("").as_ref());
+    let hex_digest = hex::encode(actual.as_ref());
+
+    return hex_digest;
+}
 
 fn main() -> std::io::Result<()> {
-    let matches = App::new("swish")
+    let matches = App::new(crate_name!())
         .version("0.1.0")
         .author("Ryan James Spencer <spencer.ryanjames@gmail.com>")
         .about("deterministically compares sets of files")
@@ -17,29 +36,30 @@ fn main() -> std::io::Result<()> {
                 .long("verbose")
                 .help("Turns on verbose output"),
         )
-        // TODO This will parse a single arg.
-        // But it's probably better if we require it's greater than two.
         .arg(
-            Arg::with_name("INPUT")
-                .help("files to compare")
-                .multiple(true)
-                .required(true),
+            Arg::with_name("FILE")
+                .min_values(2)
+                .required(true)
+                .empty_values(false),
         )
         .get_matches();
-    println!("{:?}", matches);
 
-    // Read from stdin.
-    // Eventually this will be file based
-    // but supporting stdin appropriately e.g. `-f -`
-    let mut buffer = String::new();
-    io::stdin().read_to_string(&mut buffer)?;
+    let files = matches.values_of("FILE").unwrap().collect::<Vec<_>>();
+    let buffer1 = fs::read_to_string(files[0])?;
 
-    // TODO Consider SHA256 instead
-    // This is just using the same as what git would do.
-    let actual = digest::digest(&digest::SHA1, buffer.as_ref());
-    let hex_digest = hex::encode(actual.as_ref());
+    let hex_digest1 = hash_file(buffer1);
+    println!("");
+    println!("final hash 01: {}", hex_digest1);
 
-    println!("{:x?}", hex_digest);
+    println!("");
+
+    let buffer2 = fs::read_to_string(files[1])?;
+    let hex_digest2 = hash_file(buffer2);
+    println!("");
+    println!("final hash 02: {}", hex_digest2);
+
+    // TODO This work can also be short-circuited by checking file lengths.
+    //assert_eq!(hex_digest1, hex_digest2);
 
     Ok(())
 }
