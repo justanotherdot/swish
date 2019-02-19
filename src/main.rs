@@ -22,6 +22,9 @@ fn hash_file(buffer: String) -> String {
     let actual = digest::digest(&digest::SHA256, shas.join("").as_ref());
     let hex_digest = hex::encode(actual.as_ref());
 
+    println!("");
+    println!("final hash: {}", hex_digest);
+
     return hex_digest;
 }
 
@@ -45,18 +48,11 @@ fn main() -> std::io::Result<()> {
         .get_matches();
 
     let files = matches.values_of("FILE").unwrap().collect::<Vec<_>>();
-    let buffer1 = fs::read_to_string(files[0])?;
-
-    let hex_digest1 = hash_file(buffer1);
-    println!("");
-    println!("final hash 01: {}", hex_digest1);
-
-    println!("");
-
-    let buffer2 = fs::read_to_string(files[1])?;
-    let hex_digest2 = hash_file(buffer2);
-    println!("");
-    println!("final hash 02: {}", hex_digest2);
+    for file in files.iter() {
+        let buffer = fs::read_to_string(file)?;
+        hash_file(buffer);
+        println!("");
+    }
 
     // TODO This work can also be short-circuited by checking file lengths.
     //assert_eq!(hex_digest1, hex_digest2);
