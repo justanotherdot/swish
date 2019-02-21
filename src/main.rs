@@ -2,14 +2,12 @@ mod config;
 mod swish;
 
 use config::Config;
-use swish::{all_shas_match, hash_files};
+use swish::Swish;
 
 fn main() -> std::io::Result<()> {
     let config = Config::new();
 
-    let shas = hash_files(&config.files);
-
-    if !all_shas_match(&shas) {
+    if !Swish::new(config.files).hash().all_match() {
         std::process::exit(1);
     }
 

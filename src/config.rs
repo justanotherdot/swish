@@ -34,9 +34,6 @@ impl Config {
             .collect();
         let verbose = matches.is_present("verbose");
 
-        Config {
-            files: files,
-            verbose: verbose,
-        }
+        Config { files, verbose }
     }
 }
